@@ -1,0 +1,161 @@
+# .github/workflows/ci_cd.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# CI/CD Pipeline for Churn Prediction API
+#
+# Triggers:
+#   • push to any branch → lint + unit tests
+#   • push to main       → tests + Docker build + deploy to Lambda
+#
+# Required GitHub Secrets:
+#   AWS_ROLE_ARN       – OIDC role ARN (preferred, no long-lived keys)
+#   AWS_REGION         – e.g. us-east-1
+#   ECR_REPO           – e.g. churn-prediction-api
+#   LAMBDA_FUNCTION    – e.g. churn-prediction
+#   LAMBDA_ROLE_ARN    – Lambda execution role (only needed for first deploy)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI / CD
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+permissions:
+  id-token: write   # needed for OIDC → assume role
+  contents: read
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1: Lint + Unit Tests (all branches)
+  # ───────────────────────────────────────────────────────────────────────────
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest pytest-asyncio httpx
+
+      - name: Lint with ruff
+        run: ruff check api/ data/ model/ tests/ --ignore E501
+
+      - name: Run unit tests (no model artifact required)
+        run: |
+          pytest tests/ -v --tb=short \
+            --ignore=tests/test_model_training.py \
+            -x
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2: Build Docker image (main branch only)
+  # ───────────────────────────────────────────────────────────────────────────
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.sha_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute image tag
+        id: meta
+        run: |
+          SHA_TAG="${GITHUB_SHA::8}"
+          echo "sha_tag=${SHA_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Build, tag, push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          IMAGE_TAG: ${{ steps.meta.outputs.sha_tag }}
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPO:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:latest
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 3: Deploy to Lambda (main branch only, after successful build)
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Lambda
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production      # optional: add required reviewers in GitHub UI
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Update Lambda function code
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+          LAMBDA_FUNCTION: ${{ secrets.LAMBDA_FUNCTION }}
+        run: |
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION" \
+            --image-uri "$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" \
+            --region "$AWS_REGION"
+
+          aws lambda wait function-updated \
+            --function-name "$LAMBDA_FUNCTION" \
+            --region "$AWS_REGION"
+
+          echo "✅ Lambda function updated to image tag: $IMAGE_TAG"
+
+      - name: Smoke test Lambda health endpoint
+        env:
+          LAMBDA_FUNCTION: ${{ secrets.LAMBDA_FUNCTION }}
+        run: |
+          FUNCTION_URL=$(aws lambda get-function-url-config \
+            --function-name "$LAMBDA_FUNCTION" \
+            --region "$AWS_REGION" \
+            --query FunctionUrl \
+            --output text)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${FUNCTION_URL}health")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed with HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Health check passed (HTTP $STATUS)"

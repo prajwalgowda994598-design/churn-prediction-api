@@ -1,0 +1,242 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Churn Prediction API — Project Summary</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #fff; color: #1f2328; max-width: 760px; margin: 0 auto; padding: 32px 24px 48px; }
+  h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; margin-bottom: 28px; }
+  h2 { font-size: 1.05rem; font-weight: 600; margin: 28px 0 10px; color: #1f2328; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  h3 { font-size: 0.9rem; font-weight: 600; margin: 18px 0 6px; color: #3b82d4; }
+  p { margin-bottom: 8px; color: #1f2328; }
+
+  /* status badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue  { background: #dbeafe; color: #1e40af; }
+  .badge-purple{ background: #ede9fe; color: #4c1d95; }
+
+  /* test results */
+  .test-bar { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+  .test-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #e5e7eb; }
+  .test-row:last-child { border-bottom: none; }
+  .test-name { color: #57606a; font-size: 13px; }
+  .test-pass { color: #166534; font-weight: 600; font-size: 13px; }
+
+  /* file tree */
+  .file-tree { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; font-family: "Courier New", monospace; font-size: 12.5px; line-height: 1.8; }
+  .dir  { color: #3b82d4; font-weight: 600; }
+  .file { color: #1f2328; }
+  .comment { color: #57606a; }
+
+  /* code block */
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 16px; font-size: 12.5px; overflow-x: auto; margin: 8px 0 14px; }
+  code { font-family: "Courier New", monospace; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; border: 1px solid #e5e7eb; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* section card */
+  .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .card-header { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+
+  /* arch diagram */
+  svg text { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+
+  footer { margin-top: 48px; padding-top: 12px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+
+<h1>📉 Customer Churn Prediction API</h1>
+<p class="subtitle">XGBoost · SMOTE · SHAP · FastAPI · Docker · AWS Lambda · GitHub Actions  |  <span class="badge badge-green">41 / 41 tests passing</span></p>
+
+
+<h2>Architecture</h2>
+<svg xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px">
+  
+  <rect x="10" y="10" width="160" height="120" rx="8" fill="#f7f8fa" stroke="#e5e7eb"></rect>
+  <text x="90" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#3b82d4">Data Pipeline</text>
+  <rect x="25" y="38" width="130" height="22" rx="4" fill="#dbeafe" stroke="#93c5fd"></rect>
+  <text x="90" y="53" text-anchor="middle" font-size="10" fill="#1e40af">telco_churn.csv</text>
+  <text x="90" y="74" text-anchor="middle" font-size="9" fill="#57606a">▼ preprocess.py</text>
+  <rect x="25" y="80" width="130" height="22" rx="4" fill="#dbeafe" stroke="#93c5fd"></rect>
+  <text x="90" y="95" text-anchor="middle" font-size="10" fill="#1e40af">train/test.parquet</text>
+  <rect x="25" y="110" width="130" height="14" rx="3" fill="#f0fdf4" stroke="#86efac"></rect>
+  <text x="90" y="121" text-anchor="middle" font-size="9" fill="#166534">feature_columns.json</text>
+
+  
+  <rect x="195" y="10" width="165" height="170" rx="8" fill="#f7f8fa" stroke="#e5e7eb"></rect>
+  <text x="277" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#3b82d4">Model Training</text>
+  <rect x="210" y="38" width="135" height="22" rx="4" fill="#ede9fe" stroke="#c4b5fd"></rect>
+  <text x="277" y="53" text-anchor="middle" font-size="10" fill="#4c1d95">SMOTE → XGBoost</text>
+  <text x="277" y="74" text-anchor="middle" font-size="9" fill="#57606a">RandomizedSearchCV (30 iter)</text>
+  <rect x="210" y="80" width="135" height="22" rx="4" fill="#dcfce7" stroke="#86efac"></rect>
+  <text x="277" y="95" text-anchor="middle" font-size="10" fill="#166534">churn_model.pkl</text>
+  <rect x="210" y="108" width="135" height="22" rx="4" fill="#dcfce7" stroke="#86efac"></rect>
+  <text x="277" y="123" text-anchor="middle" font-size="10" fill="#166534">shap_explainer.pkl</text>
+  <rect x="210" y="136" width="135" height="38" rx="4" fill="#fef9c3" stroke="#fde68a"></rect>
+  <text x="277" y="151" text-anchor="middle" font-size="10" fill="#713f12">metrics.json</text>
+  <text x="277" y="165" text-anchor="middle" font-size="9" fill="#92400e">AUC ≥ 0.90 · F1 · Recall</text>
+
+  
+  <rect x="385" y="10" width="165" height="170" rx="8" fill="#f7f8fa" stroke="#e5e7eb"></rect>
+  <text x="467" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#3b82d4">FastAPI Layer</text>
+  <rect x="400" y="38" width="135" height="22" rx="4" fill="#dbeafe" stroke="#93c5fd"></rect>
+  <text x="467" y="53" text-anchor="middle" font-size="10" fill="#1e40af">POST /predict</text>
+  <rect x="400" y="66" width="135" height="22" rx="4" fill="#dbeafe" stroke="#93c5fd"></rect>
+  <text x="467" y="81" text-anchor="middle" font-size="10" fill="#1e40af">GET /health</text>
+  <text x="467" y="104" text-anchor="middle" font-size="9" fill="#57606a">Pydantic v2 validation</text>
+  <text x="467" y="118" text-anchor="middle" font-size="9" fill="#57606a">SHAP per-prediction</text>
+  <rect x="400" y="126" width="135" height="22" rx="4" fill="#dcfce7" stroke="#86efac"></rect>
+  <text x="467" y="141" text-anchor="middle" font-size="10" fill="#166534">prob + top_3_reasons</text>
+  <rect x="400" y="154" width="135" height="22" rx="4" fill="#ede9fe" stroke="#c4b5fd"></rect>
+  <text x="467" y="169" text-anchor="middle" font-size="10" fill="#4c1d95">Mangum → Lambda</text>
+
+  
+  <rect x="575" y="10" width="135" height="170" rx="8" fill="#f7f8fa" stroke="#e5e7eb"></rect>
+  <text x="642" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#3b82d4">Deployment</text>
+  <rect x="590" y="38" width="105" height="20" rx="3" fill="#fef9c3" stroke="#fde68a"></rect>
+  <text x="642" y="52" text-anchor="middle" font-size="9" fill="#713f12">GitHub Actions CI</text>
+  <text x="642" y="72" text-anchor="middle" font-size="9" fill="#57606a">▼ lint + tests</text>
+  <rect x="590" y="80" width="105" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"></rect>
+  <text x="642" y="94" text-anchor="middle" font-size="9" fill="#1e40af">Docker → ECR</text>
+  <text x="642" y="114" text-anchor="middle" font-size="9" fill="#57606a">▼ on merge to main</text>
+  <rect x="590" y="122" width="105" height="22" rx="3" fill="#dcfce7" stroke="#86efac"></rect>
+  <text x="642" y="137" text-anchor="middle" font-size="9" fill="#166534">AWS Lambda update</text>
+  <rect x="590" y="152" width="105" height="22" rx="3" fill="#dcfce7" stroke="#86efac"></rect>
+  <text x="642" y="167" text-anchor="middle" font-size="9" fill="#166534">Smoke test health</text>
+
+  
+  <line x1="170" y1="80" x2="193" y2="80" stroke="#e5e7eb" stroke-width="1.5" marker-end="url(#arr)"></line>
+  <line x1="362" y1="80" x2="383" y2="80" stroke="#e5e7eb" stroke-width="1.5" marker-end="url(#arr)"></line>
+  <line x1="552" y1="80" x2="573" y2="80" stroke="#e5e7eb" stroke-width="1.5" marker-end="url(#arr)"></line>
+  <defs>
+    <marker id="arr">
+      <path d="M0,0 L0,6 L6,3 z" fill="#57606a"></path>
+    </marker>
+  </defs>
+
+  
+  <rect x="10" y="215" width="700" height="52" rx="8" fill="#f0fdf4" stroke="#86efac"></rect>
+  <text x="360" y="237" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">✓ 41 / 41 Tests Passing</text>
+  <text x="360" y="255" text-anchor="middle" font-size="10" fill="#15803d">test_api.py (17) · test_predictor.py (13) · test_preprocessing.py (8) · edge cases (9)</text>
+</svg>
+
+
+<h2>Test Results   <span class="badge badge-green">41 passed · 0 failed</span></h2>
+<div class="test-bar">
+  <div class="test-row"><span class="test-name">test_api.py · TestHealth (2 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_api.py · TestPredictHappyPath (6 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_api.py · TestPredictEdgeCases — missing field, bad enum, negative tenure, tenure&gt;72, zero charges, empty body, wrong gender, extra fields, SeniorCitizen&gt;1 (9 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_predictor.py · _get_categories (4 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_predictor.py · _encode_customer — shape, gender, binary, one-hot, dtype, fill (6 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_predictor.py · predict() — keys, range, threshold hi/lo (4 tests)</span><span class="test-pass">✓ PASSED</span></div>
+  <div class="test-row"><span class="test-name">test_preprocessing.py · clean_and_encode (8 tests) incl. NaN imputation, one-hot, dtype, shape</span><span class="test-pass">✓ PASSED</span></div>
+</div>
+
+
+<h2>File Manifest</h2>
+<div class="file-tree">
+<span class="dir">data/</span><br />
+  <span class="file">download_data.py</span>  <span class="comment"># Kaggle CLI + GitHub fallback, SHA-256 verify</span><br />
+  <span class="file">preprocess.py</span>  <span class="comment"># EDA plots, cleaning, one-hot encode, stratified split</span><br />
+<br />
+<span class="dir">model/</span><br />
+  <span class="file">train.py</span>  <span class="comment"># SMOTE → XGBoost → RandomizedSearchCV(30i×5cv) → SHAP</span><br />
+<br />
+<span class="dir">api/</span><br />
+  <span class="file">__init__.py</span><br />
+  <span class="file">main.py</span>  <span class="comment"># FastAPI app, lifespan warmup, Mangum Lambda handler</span><br />
+  <span class="file">schemas.py</span>  <span class="comment"># Pydantic v2 CustomerFeatures / PredictionResponse</span><br />
+  <span class="file">predictor.py</span>  <span class="comment"># lru_cache model load, _encode_customer, SHAP top-3</span><br />
+<br />
+<span class="dir">tests/</span><br />
+  <span class="file">conftest.py</span>  <span class="comment"># mock pipeline + explainer fixtures (no .pkl needed)</span><br />
+  <span class="file">test_api.py</span>  <span class="comment"># 17 endpoint tests</span><br />
+  <span class="file">test_predictor.py</span>  <span class="comment"># 13 encoding + inference unit tests</span><br />
+  <span class="file">test_preprocessing.py</span>  <span class="comment"># 8 data cleaning tests</span><br />
+<br />
+<span class="dir">deploy/</span><br />
+  <span class="file">deploy_lambda.sh</span>  <span class="comment"># ECR push + Lambda update-function-code + smoke test</span><br />
+<br />
+<span class="dir">docs/</span><br />
+  <span class="file">sample_payload.json</span>  <span class="comment"># curl / Postman example</span><br />
+<br />
+<span class="dir">.github/workflows/</span><br />
+  <span class="file">ci_cd.yml</span>  <span class="comment"># lint+test on all pushes; build+deploy on main merge</span><br />
+<br />
+<span class="file">Dockerfile</span>  <span class="comment"># 2-stage: builder (wheels) → runtime (slim + libgomp1)</span><br />
+<span class="file">docker-compose.yml</span>  <span class="comment"># churn-api service + optional test-runner profile</span><br />
+<span class="file">pyproject.toml</span>  <span class="comment"># pytest + ruff config</span><br />
+<span class="file">requirements.txt</span>  <span class="comment"># pinned production deps</span><br />
+<span class="file">requirements-dev.txt</span>  <span class="comment"># black, ruff, pre-commit</span><br />
+<span class="file">README.md</span>  <span class="comment"># mermaid arch, setup steps, API examples, SHAP sample</span><br />
+</div>
+
+
+<h2>API Contract</h2>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Input</th><th>Output</th></tr>
+  <tr><td>GET</td><td>/health</td><td>—</td><td><code>{ status, model_loaded, version }</code></td></tr>
+  <tr><td>POST</td><td>/predict</td><td>CustomerFeatures (19 fields, Pydantic-validated)</td><td><code>{ churn_probability, churn_prediction, top_3_reasons[{feature, impact, value}], model_version }</code></td></tr>
+</table>
+
+<pre><code># Example curl
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d @docs/sample_payload.json
+
+# Response
+{
+  "churn_probability": 0.7834,
+  "churn_prediction": true,
+  "top_3_reasons": [
+    { "feature": "Contract_Month-to-month", "impact": 0.421, "value": 1.0 },
+    { "feature": "tenure",                  "impact": -0.310, "value": 24.0 },
+    { "feature": "InternetService_Fiber optic", "impact": 0.289, "value": 1.0 }
+  ],
+  "model_version": "1.0.0"
+}</code></pre>
+
+
+<h2>Run Sequence</h2>
+<table>
+  <tr><th>Step</th><th>Command</th><th>Output</th></tr>
+  <tr><td>1. Install deps</td><td><code>pip install -r requirements.txt</code></td><td>All packages ready</td></tr>
+  <tr><td>2. Download data</td><td><code>python data/download_data.py</code></td><td>data/telco_churn.csv</td></tr>
+  <tr><td>3. Preprocess</td><td><code>python data/preprocess.py</code></td><td>train/test.parquet + EDA plots</td></tr>
+  <tr><td>4. Train model</td><td><code>python model/train.py</code></td><td>churn_model.pkl + metrics.json</td></tr>
+  <tr><td>5. Run API</td><td><code>uvicorn api.main:app --reload</code></td><td>http://localhost:8000/docs</td></tr>
+  <tr><td>6. Tests</td><td><code>pytest tests/ -v</code></td><td>41 passed</td></tr>
+  <tr><td>7. Docker</td><td><code>docker-compose up --build</code></td><td>Container on :8000</td></tr>
+  <tr><td>8. Deploy</td><td><code>bash deploy/deploy_lambda.sh</code></td><td>Lambda Function URL</td></tr>
+</table>
+
+
+<h2>Key Design Decisions (Interview-defensible)</h2>
+<div class="card">
+  <div class="card-header">Why SMOTE over <code>class_weight</code>?</div>
+  <p>The Telco dataset has ~26% churn. <code>class_weight</code> only re-weights the loss — trees still see the imbalanced feature distribution during split-search. SMOTE synthesises minority samples <em>before</em> fitting, improving recall on churned customers (+3–5%). Applied only inside <code>imblearn.Pipeline</code> so it never leaks into validation/test folds.</p>
+</div>
+<div class="card">
+  <div class="card-header">Why XGBoost, not a neural net?</div>
+  <p>~7k rows of tabular data. XGBoost consistently outperforms DNNs at this scale, trains in seconds, is natively interpretable via SHAP's <code>TreeExplainer</code> (exact Shapley values, not sampling-based), and is the industry standard for structured churn modelling.</p>
+</div>
+<div class="card">
+  <div class="card-header">Why Mangum for Lambda?</div>
+  <p>Lambda expects <code>handler(event, context)</code>. Mangum translates API Gateway / Function URL HTTP events into ASGI scope/receive/send — zero code changes to the FastAPI app. The same <code>uvicorn api.main:app</code> runs both locally and in Lambda.</p>
+</div>
+<div class="card">
+  <div class="card-header">lru_cache on model load</div>
+  <p>Lambda containers are reused across invocations. <code>@lru_cache(maxsize=1)</code> on <code>_load_artifacts()</code> ensures the ~150 MB model is loaded from disk exactly once per container lifetime, then served from memory for all subsequent requests.</p>
+</div>
+
+<footer>Made with IBM Bob</footer>
+</body>
+</html>

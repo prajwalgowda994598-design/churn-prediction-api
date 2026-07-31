@@ -1,0 +1,7 @@
+{
+  "auc": 0.8456,
+  "precision_churn": 0.6047,
+  "recall_churn": 0.6257,
+  "f1_churn": 0.615,
+  "accuracy": 0.7921
+}

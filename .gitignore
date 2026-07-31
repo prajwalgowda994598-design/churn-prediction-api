@@ -1,0 +1,55 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS files
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large raw data files (not needed for inference on Render)
+data/telco_churn.csv
+data/train.csv
+data/test.csv
+data/eda_plots/
+
+# Docker (not used on Render)
+Dockerfile
+docker-compose.yml
+
+# Temporary probe scripts
+_probe.py
+_probe2.py
+_write_gitignore.py
+
+# Misc
+*.log
+*.tmp
+*.bak
+mkdir/
