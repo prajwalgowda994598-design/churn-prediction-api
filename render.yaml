@@ -1,11 +1,12 @@
 services:
   - type: web
     name: churn-prediction-api
-    env: python
-    region: oregon          # free-tier region (change to "frankfurt" for EU)
-    plan: free
+    runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    startCommand: python run.py
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11.9"
+        value: 3.11.9
+      - key: PORT
+        generateValue: false
+        value: 8080
