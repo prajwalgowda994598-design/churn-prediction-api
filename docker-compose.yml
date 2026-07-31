@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  churn-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime          # use the slim runtime stage
+    image: churn-prediction-api:local
+    container_name: churn-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount model artifacts so you can iterate without rebuilding the image
+      - ./model:/app/model
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Optional: run the test suite against a live container
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder          # reuse builder stage which has all deps
+    image: churn-prediction-api:test
+    container_name: churn-test
+    volumes:
+      - .:/build
+    working_dir: /build
+    command: ["/opt/venv/bin/pytest", "tests/", "-v", "--tb=short"]
+    depends_on:
+      churn-api:
+        condition: service_healthy
+    profiles:
+      - test                   # only starts with: docker-compose --profile test up
