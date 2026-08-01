@@ -1,7 +1,18 @@
 # 📉 Customer Churn Prediction API
 
-> **Portfolio project** — production-grade ML API for predicting telco customer churn.  
+> **Portfolio project** — production-grade ML API for predicting telco customer churn.
 > XGBoost · SMOTE · SHAP · FastAPI · Docker · AWS Lambda · GitHub Actions
+
+---
+
+## 🚀 Live Demo
+
+| Service | URL |
+|---|---|
+| **API** (Swagger UI) | [https://churn-prediction-api-zab6.onrender.com/docs](https://churn-prediction-api-zab6.onrender.com/docs) |
+| **Dashboard** (Streamlit) | [https://churn-prediction-prajwal.streamlit.app](https://churn-prediction-prajwal.streamlit.app) |
+
+> **Note:** Both services run on free-tier hosting. The API may take **30–60 seconds** to wake up on the first request after a period of inactivity.
 
 ---
 
