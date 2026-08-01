@@ -1,7 +1,8 @@
 # 📉 Customer Churn Prediction API
 
-> **Portfolio project** — production-grade ML API for predicting telco customer churn.
-> XGBoost · SMOTE · SHAP · FastAPI · Docker · AWS Lambda · GitHub Actions
+> **Portfolio project** — Deployed production ML system (XGBoost + SHAP) achieving 0.85 AUC; built FastAPI backend (Render) and interactive Streamlit dashboard (Streamlit Cloud) with real-time explainability.
+
+**Stack:** XGBoost · SMOTE · SHAP · FastAPI · Streamlit · Docker · AWS Lambda · GitHub Actions
 
 ---
 
