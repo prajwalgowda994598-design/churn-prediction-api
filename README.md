@@ -1,19 +1,17 @@
 # 📉 Customer Churn Prediction API
 
-> **Portfolio project** — Deployed production ML system (XGBoost + SHAP) achieving 0.85 AUC; built FastAPI backend (Render) and interactive Streamlit dashboard (Streamlit Cloud) with real-time explainability.
+## Live Demo
 
-**Stack:** XGBoost · SMOTE · SHAP · FastAPI · Streamlit · Docker · AWS Lambda · GitHub Actions
+- **API** (Swagger docs): [https://churn-prediction-api-zab6.onrender.com/docs](https://churn-prediction-api-zab6.onrender.com/docs)
+- **Interactive Dashboard**: [https://churn-prediction-prajwal.streamlit.app](https://churn-prediction-prajwal.streamlit.app)
+
+> ⚠️ Free tier — first request may take **30–60 s** to wake up.
 
 ---
 
-## 🚀 Live Demo
+> **Portfolio project** — Deployed production ML system (XGBoost + SHAP) achieving 0.85 AUC; built FastAPI backend (Render) and interactive Streamlit dashboard (Streamlit Cloud) with real-time explainability.
 
-| Service | URL |
-|---|---|
-| **API** (Swagger UI) | [https://churn-prediction-api-zab6.onrender.com/docs](https://churn-prediction-api-zab6.onrender.com/docs) |
-| **Dashboard** (Streamlit) | [https://churn-prediction-prajwal.streamlit.app](https://churn-prediction-prajwal.streamlit.app) |
-
-> **Note:** Both services run on free-tier hosting. The API may take **30–60 seconds** to wake up on the first request after a period of inactivity.
+**Stack:** XGBoost · SMOTE · SHAP · FastAPI · Streamlit · Docker · AWS Lambda · GitHub Actions
 
 ---
 
